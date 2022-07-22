@@ -9,14 +9,18 @@ fn read_wav(path: &Path) -> Vec<i16> {
 
 fn comb_filter(
     samples: Vec<i16>,
-    samples_length: i16,
+    samples_length: u16,
     delay: f32,
     decay_factor: f32,
-    sample_rate: f32,
+    sample_rate: u32,
 ) -> Vec<f32> {
-    let delay_samples = (delay * (sample_rate / 1000 as f32)) as i16;
-    let cloned_samples: Vec<i16> = samples.clone();
-    let mut comb_filter_samples: Vec<f32> = cloned_samples.iter().map(|&e| e as f32).collect();
+    // Comb filtering is the mixing of indentical audio signals with a slight delay.
+    // In other words it creates an "echo" effect.
+
+    // from the number of samples per millisecond
+    let delay_samples = (delay * (sample_rate / 1000) as f32) as u16;
+
+    let mut comb_filter_samples: Vec<f32> = samples.iter().map(|&x| x as f32).collect();
 
     for i in 0..(samples_length - delay_samples) {
         comb_filter_samples[(i + delay_samples) as usize] +=
