@@ -31,6 +31,45 @@ fn comb_filter(
     comb_filter_samples
 }
 
+fn all_pass_filter(samples: Vec<f32>, samples_length: u16, sample_rate: u32) -> Vec<f32> {
+    let delay_samples = (89.27 * (sample_rate / 1000) as f32) as i16;
+    let mut all_pass_filter_samples: Vec<f32> = vec![0.0; samples_length as usize];
+    let decay_factor = 0.131;
+
+    for i in 0..samples_length {
+        all_pass_filter_samples[i as usize] = samples[i as usize];
+
+        if i - delay_samples >= 0 {
+            all_pass_filter_samples[i as usize] +=
+                -decay_factor * all_pass_filter_samples[(i - delay_samples) as usize];
+        }
+
+        if i - delay_samples >= 1 {
+            all_pass_filter_samples[i as usize] +=
+                decay_factor * all_pass_filter_samples[(i - (1 + delay_samples)) as usize];
+        }
+    }
+
+    // Smoothing and normalisation of samples to prevent clipping.
+    let mut value = all_pass_filter_samples[0];
+    let mut max = 0.0;
+
+    for i in 0..samples_length {
+        if all_pass_filter_samples[i as usize].abs() > max {
+            max = all_pass_filter_samples[i as usize].abs();
+        }
+    }
+
+    for i in 0..all_pass_filter_samples.len() {
+        let current = all_pass_filter_samples[i as usize];
+        value = (value + (current - value)) / max;
+
+        all_pass_filter_samples[i as usize] = value;
+    }
+
+    all_pass_filter_samples
+}
+
 fn main() {
     let spec = hound::WavSpec {
         channels: 1,
@@ -83,17 +122,28 @@ fn main() {
             + comb_filter_samples4[i]
     }
 
-    // // add dry/wet mix
+    // add dry/wet mix
     let mut mixed_audio: Vec<i16> = vec![0; buffer_size];
     for i in 0..buffer_size {
         mixed_audio[i] = (((100.0 - mix_percent) * samples[i] as f32)
             + (mix_percent * comb_filter_output[i])) as i16
     }
 
-    // // // write to wav file
+    let mixed_audio_f32 = mixed_audio.iter().map(|&x| x as f32).collect();
+
+    // apply all pass filters
+    let all_pass_filter_samples1 =
+        all_pass_filter(mixed_audio_f32, buffer_size as u16, spec.sample_rate);
+    let all_pass_filter_samples2 = all_pass_filter(
+        all_pass_filter_samples1,
+        buffer_size as u16,
+        spec.sample_rate,
+    );
+
+    //  write to wav file
     let mut writer = hound::WavWriter::create(format!("test.wav"), spec).unwrap();
 
-    for sample in mixed_audio {
+    for sample in all_pass_filter_samples2 {
         writer.write_sample(sample).unwrap();
     }
     writer.finalize().unwrap();
