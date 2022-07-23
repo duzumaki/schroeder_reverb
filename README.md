@@ -12,6 +12,8 @@ https://youtu.be/k1SorBkeqlo
 
 
 
+
+
 How the code works:
 
 1. Reads wav audio file into a "samples" Vector.
@@ -20,4 +22,7 @@ How the code works:
 3. Run the combined output of the comb filters through 2 all pass filters in series order to smooth and normalise the samples but also fatten up the impulse response density.
 
 
+Wav audio was chosen only for 2 reasons.
+Wav is uncompressed which means no decoding code needed
+The [hound crate](https://crates.io/crates/hound) makes it easy to read and write wav files.
 
