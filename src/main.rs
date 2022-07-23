@@ -33,10 +33,10 @@ fn comb_filter(
 
 fn main() {
     let spec = hound::WavSpec {
-        channels: 2,
-        sample_rate: 44100,
-        bits_per_sample: 32,
-        sample_format: hound::SampleFormat::Float,
+        channels: 1,
+        sample_rate: 22000,
+        bits_per_sample: 16,
+        sample_format: hound::SampleFormat::Int,
     };
 
     let mix_percent = 50.0;
@@ -51,22 +51,46 @@ fn main() {
 
     let comb_filter_samples1 =
         comb_filter(&samples, buffer_size as u16, 78.9, 0.45, spec.sample_rate);
+    let comb_filter_samples2 = comb_filter(
+        &samples,
+        buffer_size as u16,
+        78.9 - 11.73,
+        0.45 - 0.1313,
+        spec.sample_rate,
+    );
+    let comb_filter_samples3 = comb_filter(
+        &samples,
+        buffer_size as u16,
+        78.9 - 19.31,
+        0.45 - 0.2743,
+        spec.sample_rate,
+    );
+    let comb_filter_samples4 = comb_filter(
+        &samples,
+        buffer_size as u16,
+        78.9 - 7.97,
+        0.45 - 0.31,
+        spec.sample_rate,
+    );
 
     let mut comb_filter_output: Vec<f32> = vec![0.0; buffer_size];
 
-    //combine comb filters
+    // combine comb filters
     for i in 0..buffer_size {
         comb_filter_output[i] = comb_filter_samples1[i]
+            + comb_filter_samples2[i]
+            + comb_filter_samples3[i]
+            + comb_filter_samples4[i]
     }
 
-    // add dry/wet mix
-    let mut mixed_audio: Vec<f32> = vec![0.0; buffer_size];
+    // // add dry/wet mix
+    let mut mixed_audio: Vec<i16> = vec![0; buffer_size];
     for i in 0..buffer_size {
-        mixed_audio[i] =
-            ((100.0 - mix_percent) * samples[i] as f32) + (mix_percent * comb_filter_output[i])
+        mixed_audio[i] = (((100.0 - mix_percent) * samples[i] as f32)
+            + (mix_percent * comb_filter_output[i])) as i16
     }
 
-    // write to wav file
+    // // // write to wav file
     let mut writer = hound::WavWriter::create(format!("test.wav"), spec).unwrap();
 
     for sample in mixed_audio {
