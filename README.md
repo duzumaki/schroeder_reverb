@@ -5,7 +5,7 @@ A Schroeder reverb implementation in rust.
 Disclaimer: I am not adept in digital signal processing or anything. It's just something I found interesting last week and came across papers discussing audio
 reverb.
 
-Check out this video if you want some theory context on what this tpye of reverb is: 
+Check out this video if you want some theory context on what this type of reverb is: 
 https://youtu.be/k1SorBkeqlo
 
 <img width="908" alt="image" src="https://user-images.githubusercontent.com/56260075/180619109-e8577f47-099d-4f56-8e0f-d9953d768b64.png">
