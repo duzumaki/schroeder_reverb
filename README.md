@@ -17,7 +17,7 @@ https://youtu.be/k1SorBkeqlo
 How the code works:
 
 1. Reads wav audio file into a "samples" Vector.
-2. Runs 4 comb filters in parrallele on the samples in order to add the delay effect that's assosciated with reverb.
+2. Runs 4 comb filters in parrallel on the samples in order to add the delay effect that's assosciated with reverb.
 (this isn't the best algorithm for reverb as the result is quite metallic compared to modern approaches).
 3. Run the combined output of the comb filters through 2 all pass filters in series order to smooth and normalise the samples but also fatten up the impulse response density.
 
